@@ -7,12 +7,12 @@ div::-webkit-scrollbar {
   border-radius: 4px;
 }
 div::-webkit-scrollbar-track {
-    background-color: #d5d5d5;
+    background-color: #1e6495;
     border-radius: 4px;
 }
 
 div::-webkit-scrollbar-thumb {
-    background-color: #f5f5f5;
+    background-color: #5191c1;
     border-color: black;
     border-radius: 4px;
 }
@@ -20,3 +20,9 @@ div::-webkit-scrollbar-thumb {
 div::-webkit-scrollbar-thumb:hover {
     background-color: #888;
 }
+
+/* .color1 { #fb6f24" };
+.color2 { #8ca315 };
+.color3 { #5191c1 };
+.color4 { #1e6495 };
+.color5 { #0a4b75 }; */
