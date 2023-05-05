@@ -36,8 +36,9 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
 
 ## TODO
-- [X] Add task categories (name, color) 
+- [ ] Add task categories (name, color)
+    - [ ] Add task categories (database)
 - [ ] Add task priority 
-- [ ] Implement a database 
+- [X] Implement a database 
 - [X] Add filters by category 
 - [ ] Sort by priorities
