@@ -40,6 +40,13 @@ export async function GET(req: Request, { params }: { params: Id }) {
     where: {
       id: id,
     },
+    include: {
+      category: {
+        select: {
+          color: true,
+        },
+      },
+    },
   });
 
   return NextResponse.json(getTask);
