@@ -13,5 +13,5 @@ export async function POST(req: Request, { params }: { params: Category }) {
     },
   });
 
-  return new Response(createCategory.title, {status:201})
+  return new Response(createCategory.title, { status: 201 });
 }

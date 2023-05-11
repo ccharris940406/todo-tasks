@@ -1,28 +1,46 @@
 import { createPortal } from "react-dom";
 import { useEffect, useRef, useState } from "react";
-
-type singleTask = {
-  content: string;
-  status: "Running" | "Canceled" | "Completed";
-  priority: "High" | "Normal" | "Low";
-  category?: string;
-};
+import useSWR from "swr";
+import { Category } from "@prisma/client";
+import { NextResponse } from "next/server";
 
 type params = {
+  currentTask: number | null;
+  currentTaskCategory: number | null;
   closeModal: () => void;
-  taskId: singleTask | null;
-  categories: string[];
+};
+
+const setTaskCategory = async (
+  idTask: number | null,
+  idCategory: number | null
+) => {
+  console.log("hellou category", idCategory, idTask);
+  if (idTask === null || idCategory === null) throw new Error("Failed");
+  const res = await fetch(`/api/tasks/${idTask}`, {
+    method: "PUT",
+    body: JSON.stringify({
+      categoryId: idCategory,
+    }),
+  });
+  if (!res.ok) throw new Error("Failed");
+  return NextResponse.json(res);
 };
 
 export default function TaskModalSettings({
+  currentTask,
+  currentTaskCategory,
   closeModal,
-  taskId,
-  categories,
 }: params) {
   const [modalContainer, setModalContainer] = useState<HTMLDivElement | null>(
     null
   );
   const categorySelect = useRef<HTMLSelectElement | null>(null);
+  const [categoryToSet, setCategoryToSet] = useState<number>(
+    currentTaskCategory ? currentTaskCategory : 0
+  );
+  const { data: dataCategories, mutate: mutateCategories } =
+    useSWR("/api/categories");
+  const { mutate: taskMutate } = useSWR(`/api/tasks/${currentTask}`);
 
   useEffect(() => {
     setModalContainer(document.createElement("div"));
@@ -32,9 +50,6 @@ export default function TaskModalSettings({
     if (modalContainer) {
       document.body.appendChild(modalContainer);
     }
-
-    if (categorySelect.current !== null && taskId?.category !== undefined)
-      categorySelect.current.value = taskId?.category;
 
     return () => {
       if (modalContainer !== null) {
@@ -58,14 +73,18 @@ export default function TaskModalSettings({
         >
           <div className="flex h-full w-full self-center">
             <select
-              ref={categorySelect}
+              value={categoryToSet}
+              onChange={(event) => {
+                console.log(+event.currentTarget.value);
+                setCategoryToSet(+event.currentTarget.value as number);
+              }}
               name="Categories"
               id=""
               className="w-[50%] h-14 m-1"
             >
-              <option value="">Select a category</option>
-              {categories.map((cat) => {
-                return <option value={cat}>{cat}</option>;
+              <option value={0}>Select a category</option>
+              {dataCategories.map((cat: Category) => {
+                return <option value={cat.id}>{cat.title}</option>;
               })}
             </select>
             <select name="" id="" className="w-[50%] h-14 m-1"></select>
@@ -79,10 +98,8 @@ export default function TaskModalSettings({
             </button>
             <button
               onClick={() => {
-                taskId &&
-                  categorySelect.current &&
-                  (taskId.category = categorySelect.current?.value,
-                    closeModal())
+                setTaskCategory(currentTask, categoryToSet);
+                taskMutate();
               }}
               className="m-4 h-10 bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded"
             >

@@ -1,3 +1,4 @@
+import { Category } from "@prisma/client";
 import { FaCheckCircle, FaMinusCircle } from "react-icons/fa";
 import { ImBlocked } from "react-icons/im";
 import { SlOptionsVertical } from "react-icons/sl";
@@ -6,11 +7,18 @@ import useSWR from "swr";
 type Task = {
   id: number;
   title: string;
-  category: number;
+  categoryId: number;
+  category: Category;
   completed: boolean;
   canceled: boolean;
 };
 
+type Params = {
+  taskProps: Task;
+  openTaskSettings: () => void;
+  setCurrentTask: (id: number) => void;
+  setCurrentTaskCategory: (id: number) => void;
+};
 const getTask = async (key: string) => {
   const res = await fetch(key);
 
@@ -19,9 +27,14 @@ const getTask = async (key: string) => {
   return result;
 };
 
-export default function Task({ task_props }: { task_props: Task }) {
+export default function Task({
+  taskProps,
+  openTaskSettings,
+  setCurrentTask,
+  setCurrentTaskCategory: setCurrentTaskCategory,
+}: Params) {
   const { data, isLoading, error, mutate } = useSWR(
-    `/api/tasks/${task_props.id}`,
+    `/api/tasks/${taskProps.id}`,
     getTask
   );
 
@@ -69,6 +82,11 @@ export default function Task({ task_props }: { task_props: Task }) {
           placeholder="Task Name"
           className="p-2 w-[90%] bg-[#e0eebd] rounded-2xl "
           value={data.title}
+          style={{
+            backgroundColor: data.category?.color
+              ? `#${data.category.color}`
+              : "#e0eebd",
+          }}
           onChange={(event) => {
             setTitle(data.id, event.target.value);
             mutate({ ...data, title: event.target.value });
@@ -114,7 +132,8 @@ export default function Task({ task_props }: { task_props: Task }) {
           <button
             className={`p-1 m-1 text-[#0a4b75] text-2xl ${
               data.canceled !== true || data.completed !== true
-                ? "hover:text-[#000000]" : true
+                ? "hover:text-[#000000]"
+                : true
             }`}
             onClick={() => {
               removeTask(data.id);
@@ -123,7 +142,13 @@ export default function Task({ task_props }: { task_props: Task }) {
           >
             <FaMinusCircle />
           </button>
-          <button>
+          <button
+            onClick={() => {
+              openTaskSettings();
+              setCurrentTask(data.id);
+              setCurrentTaskCategory(data.categoryId);
+            }}
+          >
             <SlOptionsVertical />
           </button>
         </div>

@@ -1,13 +1,20 @@
-import { useEffect, useRef, useState } from "react";
+import { SetStateAction, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { IoAddCircleOutline} from "react-icons/io5"
+import { IoAddCircleOutline } from "react-icons/io5";
 import { FaMinusCircle } from "react-icons/fa";
+import { ChromePicker } from "react-color";
+
+type Category = {
+  title: string;
+  id?: number;
+  color?: string;
+};
 
 type params = {
-  categories: string[];
+  categories: Category[];
   closeModal: () => void;
-  addCategory: (category: string) => void;
-  removeCategory: (index: number) => void;
+  addCategory: (categoryTitle: string, categoryColor: string) => void;
+  removeCategory: (id: number) => void;
 };
 
 export default function TaskModalAddCategory({
@@ -16,6 +23,8 @@ export default function TaskModalAddCategory({
   addCategory,
   removeCategory,
 }: params) {
+  const [colorPicker, setColorPicker] = useState(false);
+  const [currentColor, setCurrentColor] = useState("#ffffff");
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [modalContainer, setModalContainer] = useState<HTMLDivElement | null>(
     null
@@ -35,6 +44,13 @@ export default function TaskModalAddCategory({
       }
     };
   }, [modalContainer]);
+
+  const handeColor = (col: { hex: SetStateAction<string> }) => {
+    const stringColor = col.hex.toString();
+    setCurrentColor(() => {
+      return stringColor;
+    });
+  };
 
   return (
     modalContainer &&
@@ -58,24 +74,48 @@ export default function TaskModalAddCategory({
             <button
               className=" rounded-full text-center text-[2.5em] text-[#0a4b75] align-middle justify-center bg-[#00000000] w-[10%] h-full self-center"
               onClick={() => {
-                addCategory(inputRef.current?.value ?? "");
+                addCategory(inputRef.current?.value ?? "", currentColor);
               }}
             >
               <IoAddCircleOutline />
             </button>
+            <button
+              style={{ backgroundColor: currentColor }}
+              className={`w-5 rounded-xl`}
+              onClick={() =>
+                setColorPicker(() => {
+                  return !colorPicker;
+                })
+              }
+            ></button>
+            {colorPicker && (
+              <div className="absolute z-10 inline-block w-64">
+                <ChromePicker color={currentColor} onChange={handeColor} />
+              </div>
+            )}
           </div>
           <div className="h-[80%] mt-1 overflow-auto">
-            {categories.map((category, index) => {
+            {categories.map((category) => {
               return (
                 categories.length != 0 && (
                   <div className="p-1 bg-[#5191c1] m-1 first:mt-0 justify-center last:mb-0 rounded-lg flex">
-                    <h2 className="rounded-lg w-[90%] text-2xl bg-[#fb6f24] ">{category}</h2>
-                    <button className="text-2xl text-[#044b75] self-center align-middle w-[10%] justify-center items-center ml-1 text-center "
+                    <h2
+                      style={{
+                        backgroundColor: `#${
+                          category.color ? category.color : "#ffffff"
+                        }`,
+                      }}
+                      className="rounded-lg w-[90%] text-2xl"
+                    >
+                      {category.title}
+                    </h2>
+                    <button
+                      className="text-2xl text-[#044b75] self-center align-middle w-[10%] justify-center items-center ml-1 text-center "
                       onClick={() => {
-                        removeCategory(index);
+                        removeCategory(category.id ? category.id : 0);
                       }}
                     >
-                  <FaMinusCircle />
+                      <FaMinusCircle />
                     </button>
                   </div>
                 )
