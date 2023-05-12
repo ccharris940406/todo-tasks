@@ -1,12 +1,15 @@
 import { prisma } from "@/app/prismaClient";
+import { Task } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 type Id = {
   id: number;
 };
 
+type CategoryUpdate = Partial<Task>;
+
 export async function PUT(req: Request, { params }: { params: Id }) {
-  const name = await req.json();
+  const name : CategoryUpdate = await req.json();
   const id: number = +params.id;
 
   const updateTask = await prisma.task.update({

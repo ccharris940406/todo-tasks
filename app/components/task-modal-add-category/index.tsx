@@ -36,13 +36,13 @@ export default function TaskModalAddCategory({
     catTitle: string,
     catColor: string
   ) => {
-    console.log(`${key}/title/${catTitle}/${catColor}`);
-    const res = await fetch(
-      `${key}/title/${catTitle}/${catColor.substring(1)}`,
-      {
-        method: "POST",
-      }
-    );
+    const res = await fetch(`${key}`, {
+      method: "POST",
+      body: JSON.stringify({
+        title: catTitle,
+        color: catColor.substring(1),
+      }),
+    });
     if (!res.ok) throw new Error("Failed creating category");
     const cate: Category = await res.json();
     return cate;
