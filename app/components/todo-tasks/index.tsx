@@ -21,14 +21,7 @@ const getCategories = async (key: string) => {
   return categories;
 };
 
-const addCategory = async (key: string, catTitle: string, catColor: string) => {
-  console.log(`${key}/title/${catTitle}/${catColor}`);
-  const res = await fetch(`${key}/title/${catTitle}/${catColor}`, {
-    method: "POST",
-  });
-  if (!res.ok) throw new Error("Failed creating category");
-  return res.status;
-};
+
 
 const removeCategory = async (id: number) => {
   const res = await fetch(`/api/categories/${id}`, {
@@ -155,15 +148,6 @@ export default function TodoTasks() {
         <TaskModalAddCategory
           categories={dataCategories ?? []}
           closeModal={() => setAddCategoryOpen(false)}
-          addCategory={(category: string, color: string) => {
-            addCategory("/api/categories", category, color.substring(1));
-            dataCategories
-              ? mutateCategories([
-                  ...dataCategories,
-                  { title: category, color: color },
-                ])
-              : true;
-          }}
           removeCategory={(id) => {
             removeCategory(id);
             mutateCategories();

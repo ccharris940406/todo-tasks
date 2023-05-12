@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { IoAddCircleOutline } from "react-icons/io5";
 import { FaMinusCircle } from "react-icons/fa";
 import { ChromePicker } from "react-color";
+import useSWR from "swr";
 
 type Category = {
   title: string;
@@ -13,14 +14,12 @@ type Category = {
 type params = {
   categories: Category[];
   closeModal: () => void;
-  addCategory: (categoryTitle: string, categoryColor: string) => void;
   removeCategory: (id: number) => void;
 };
 
 export default function TaskModalAddCategory({
   categories,
   closeModal,
-  addCategory,
   removeCategory,
 }: params) {
   const [colorPicker, setColorPicker] = useState(false);
@@ -29,6 +28,25 @@ export default function TaskModalAddCategory({
   const [modalContainer, setModalContainer] = useState<HTMLDivElement | null>(
     null
   );
+  const { data: dataCategories, mutate: categoriesMutate } =
+    useSWR("/api/categories");
+
+  const addCategory = async (
+    key: string,
+    catTitle: string,
+    catColor: string
+  ) => {
+    console.log(`${key}/title/${catTitle}/${catColor}`);
+    const res = await fetch(
+      `${key}/title/${catTitle}/${catColor.substring(1)}`,
+      {
+        method: "POST",
+      }
+    );
+    if (!res.ok) throw new Error("Failed creating category");
+    const cate: Category = await res.json();
+    return cate;
+  };
   useEffect(() => {
     setModalContainer(document.createElement("div"));
   }, []);
@@ -74,7 +92,12 @@ export default function TaskModalAddCategory({
             <button
               className=" rounded-full text-center text-[2.5em] text-[#0a4b75] align-middle justify-center bg-[#00000000] w-[10%] h-full self-center"
               onClick={() => {
-                addCategory(inputRef.current?.value ?? "", currentColor);
+                const newCat = addCategory(
+                  "/api/categories",
+                  inputRef.current?.value ?? "",
+                  currentColor
+                );
+                categoriesMutate([...dataCategories, newCat]);
               }}
             >
               <IoAddCircleOutline />
